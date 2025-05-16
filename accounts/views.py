@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from rest_framework import viewsets, generics, status
 from rest_framework.response import Response
+from rest_framework.decorators import action
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import smart_bytes
@@ -15,6 +16,12 @@ from .serializers import UserSerializer, PasswordResetRequestSerializer, Passwor
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+
+    @action(detail=False, methods=['get'], url_path='me')
+    def me(self, request):
+        user = request.user
+        serializer = self.get_serializer(user)
+        return Response(serializer.data)
 
 class PasswordResetRequestView(generics.GenericAPIView):
     serializer_class = PasswordResetRequestSerializer

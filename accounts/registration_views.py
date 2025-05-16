@@ -10,6 +10,7 @@ from django.conf import settings
 from .models import User
 from .serializers import UserSerializer, EmailVerificationSerializer
 from doctors.models import DoctorProfile
+from patients.models import PatientProfile
 
 class UserRegistrationView(generics.CreateAPIView):
     queryset = User.objects.all()
@@ -28,6 +29,14 @@ class UserRegistrationView(generics.CreateAPIView):
                     'certification': '',
                     'degree': '',
                     'clinic_location': '',
+                }
+            )
+        # Automatically create PatientProfile if user_type is patient
+        elif user.user_type == 'patient':
+            PatientProfile.objects.get_or_create(
+                user=user,
+                defaults={
+                    'medical_history': '',
                 }
             )
         uidb64 = urlsafe_base64_encode(smart_bytes(user.id))
