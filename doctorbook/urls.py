@@ -25,6 +25,7 @@ from accounts.token_views import MyTokenObtainPairView
 from accounts.views import UserViewSet, PasswordResetRequestView, PasswordResetConfirmView
 from accounts.registration_views import UserRegistrationView, EmailVerificationView
 from doctors.views import DoctorProfileViewSet, DoctorAvailabilityViewSet
+from doctors.views_rating import DoctorRatingViewSet
 from patients.views import PatientProfileViewSet
 from appointments.views import AppointmentViewSet
 from notifications.views import NotificationViewSet
@@ -36,6 +37,7 @@ router.register(r'doctor-availabilities', DoctorAvailabilityViewSet)
 router.register(r'patients', PatientProfileViewSet)
 router.register(r'appointments', AppointmentViewSet)
 router.register(r'notifications', NotificationViewSet)
+router.register(r'doctor-ratings', DoctorRatingViewSet)
 
 urlpatterns = [
     path('admin/', admin.site.urls),

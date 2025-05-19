@@ -1,5 +1,12 @@
 from django.contrib import admin
 from .models import DoctorProfile, DoctorAvailability
+from .models_rating import DoctorRating
+class DoctorRatingAdmin(admin.ModelAdmin):
+    list_display = ('doctor', 'patient', 'rating', 'created_at')
+    search_fields = ('doctor__user__email', 'patient__email')
+    list_filter = ('rating',)
+
+admin.site.register(DoctorRating, DoctorRatingAdmin)
 
 class DoctorProfileAdmin(admin.ModelAdmin):
     list_display = ('user', 'specialty', 'years_of_experience', 'is_verified', 'certificate_document')

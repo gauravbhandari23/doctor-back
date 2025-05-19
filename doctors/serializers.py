@@ -1,15 +1,24 @@
 from rest_framework import serializers
 from .models import DoctorProfile, DoctorAvailability
 
+
 class DoctorProfileSerializer(serializers.ModelSerializer):
     user_email = serializers.SerializerMethodField(read_only=True)
     user_phone = serializers.SerializerMethodField(read_only=True)
     user_username = serializers.SerializerMethodField(read_only=True)
+    rating = serializers.FloatField(read_only=True)
+    rating_count = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = DoctorProfile
-        fields = ['id', 'user', 'user_email', 'user_phone', 'user_username', 'specialty', 'years_of_experience', 'certification', 'degree', 'profile_photo', 'certificate_document', 'clinic_location', 'latitude', 'longitude', 'is_verified']
-        read_only_fields = ['user', 'user_email', 'user_phone', 'user_username']
+        fields = [
+            'id', 'user', 'user_email', 'user_phone', 'user_username',
+            'specialty', 'years_of_experience', 'certification', 'degree',
+            'profile_photo', 'certificate_document', 'clinic_location',
+            'latitude', 'longitude', 'is_verified',
+            'rating', 'rating_count',
+        ]
+        read_only_fields = ['user', 'user_email', 'user_phone', 'user_username', 'rating', 'rating_count']
 
     def get_user_email(self, obj):
         return obj.user.email if obj.user else ''

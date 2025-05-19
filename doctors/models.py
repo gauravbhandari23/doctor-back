@@ -18,6 +18,9 @@ class DoctorProfile(models.Model):
     longitude = models.FloatField(null=True, blank=True)
     is_verified = models.BooleanField(default=False)
     certificate_document = models.FileField(upload_to='doctor_certificates/', null=True, blank=True)
+    # New fields for rating
+    rating = models.FloatField(default=0.0)
+    rating_count = models.PositiveIntegerField(default=0)
     # TODO: Add admin verification workflow logic here if required in the future
     # TODO: Add doctor availability/slots model and relation if needed
     # TODO: Add more fields for advanced search/filter if needed
@@ -26,7 +29,7 @@ class DoctorProfile(models.Model):
     # TODO: Add signals for post-save actions (e.g., send verification email)
 
     def __str__(self):
-        return f"{self.user.email} - {self.specialty}"
+        return f"{self.user.email} - {self.specialty} (Rating: {self.rating:.2f} from {self.rating_count} ratings)"
 
 class DoctorAvailability(models.Model):
     doctor = models.ForeignKey(DoctorProfile, on_delete=models.CASCADE, related_name='availabilities')

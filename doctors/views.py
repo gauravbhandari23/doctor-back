@@ -9,6 +9,12 @@ from .serializers import DoctorProfileSerializer, DoctorAvailabilitySerializer
 # Create your views here.
 # No router registration here. All router registration is handled in doctorbook/urls.py.
 
+
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from rest_framework import status
+from django.db import transaction
+
 class DoctorProfileViewSet(viewsets.ModelViewSet):
     queryset = DoctorProfile.objects.all()
     serializer_class = DoctorProfileSerializer
@@ -39,6 +45,27 @@ class DoctorProfileViewSet(viewsets.ModelViewSet):
         if location:
             queryset = queryset.filter(clinic_location__icontains=location)
         return queryset
+
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
+    @transaction.atomic
+    def rate(self, request, pk=None):
+        """
+        Allows a patient to rate a doctor. Expects 'rating' in POST data (1-5).
+        """
+        doctor = self.get_object()
+        rating = request.data.get('rating')
+        try:
+            rating = float(rating)
+        except (TypeError, ValueError):
+            return Response({'detail': 'Invalid rating value.'}, status=status.HTTP_400_BAD_REQUEST)
+        if not (1 <= rating <= 5):
+            return Response({'detail': 'Rating must be between 1 and 5.'}, status=status.HTTP_400_BAD_REQUEST)
+        # Update average rating
+        total = doctor.rating * doctor.rating_count
+        doctor.rating_count += 1
+        doctor.rating = (total + rating) / doctor.rating_count
+        doctor.save()
+        return Response({'detail': 'Rating submitted.', 'rating': doctor.rating, 'rating_count': doctor.rating_count})
 
     def get_object(self):
         obj = super().get_object()
