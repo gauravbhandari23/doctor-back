@@ -27,6 +27,7 @@ from accounts.registration_views import UserRegistrationView, EmailVerificationV
 from doctors.views import DoctorProfileViewSet, DoctorAvailabilityViewSet
 from patients.views import PatientProfileViewSet
 from appointments.views import AppointmentViewSet
+from notifications.views import NotificationViewSet
 
 router = routers.DefaultRouter()
 router.register(r'users', UserViewSet)
@@ -34,6 +35,7 @@ router.register(r'doctors', DoctorProfileViewSet)
 router.register(r'doctor-availabilities', DoctorAvailabilityViewSet)
 router.register(r'patients', PatientProfileViewSet)
 router.register(r'appointments', AppointmentViewSet)
+router.register(r'notifications', NotificationViewSet)
 
 urlpatterns = [
     path('admin/', admin.site.urls),

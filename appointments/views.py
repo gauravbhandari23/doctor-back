@@ -6,6 +6,7 @@ from .models import Appointment
 from .serializers import AppointmentSerializer
 from django.core.mail import send_mail
 from django.conf import settings
+from notifications.models import Notification
 
 # Create your views here.
 
@@ -27,6 +28,12 @@ class AppointmentViewSet(viewsets.ModelViewSet):
         # If patient is creating, set patient field automatically
         if user.user_type == 'patient' and not user.is_staff:
             appointment = serializer.save(patient=user)
+            # Notify doctor
+            Notification.objects.create(
+                recipient=appointment.doctor.user,
+                message=f"New appointment booked by {user.username} for {appointment.date} at {appointment.time}.",
+                appointment=appointment
+            )
         # If doctor is creating, set doctor field automatically
         elif user.user_type == 'doctor' and not user.is_staff:
             doctor_profile = getattr(user, 'doctor_profile', None)
@@ -47,18 +54,62 @@ class AppointmentViewSet(viewsets.ModelViewSet):
 
     def perform_update(self, serializer):
         user = self.request.user
+        instance = self.get_object()
+        prev_status = instance.status
         # Prevent patients from changing the patient field
         if user.user_type == 'patient' and not user.is_staff:
-            serializer.save(patient=user)
+            updated = serializer.save(patient=user)
         # Prevent doctors from changing the doctor field
         elif user.user_type == 'doctor' and not user.is_staff:
             doctor_profile = getattr(user, 'doctor_profile', None)
             if doctor_profile:
-                serializer.save(doctor=doctor_profile)
+                updated = serializer.save(doctor=doctor_profile)
             else:
-                serializer.save()
+                updated = serializer.save()
         else:
-            serializer.save()
+            updated = serializer.save()
+        # Notify patient if doctor confirms appointment
+        if prev_status == 'pending' and updated.status == 'confirmed':
+            Notification.objects.create(
+                recipient=updated.patient,
+                message=f"Your appointment on {updated.date} at {updated.time} has been confirmed by Dr. {updated.doctor.user.username}.",
+                appointment=updated
+            )
+        # Notify patient if doctor completes appointment
+        if prev_status in ['pending', 'confirmed'] and updated.status == 'completed':
+            Notification.objects.create(
+                recipient=updated.patient,
+                message=f"Your appointment on {updated.date} at {updated.time} with Dr. {updated.doctor.user.username} has been marked as completed. Thank you for visiting!",
+                appointment=updated
+            )
+        # Notify doctor if patient cancels appointment
+        if user.user_type == 'patient' and not user.is_staff:
+            if prev_status != 'canceled' and updated.status == 'canceled':
+                Notification.objects.create(
+                    recipient=updated.doctor.user,
+                    message=f"The appointment on {updated.date} at {updated.time} with {updated.patient.username} has been canceled by the patient.",
+                    appointment=updated
+                )
+            # Notify doctor if patient edits (date, time, severity, symptoms) and not a cancel
+            elif updated.status == prev_status and (
+                instance.date != updated.date or
+                instance.time != updated.time or
+                instance.severity != updated.severity or
+                instance.symptoms != updated.symptoms
+            ):
+                Notification.objects.create(
+                    recipient=updated.doctor.user,
+                    message=f"The appointment on {updated.date} at {updated.time} with {updated.patient.username} has been updated by the patient.",
+                    appointment=updated
+                )
+        # Send notification/email (placeholder)
+        send_mail(
+            'Appointment Updated',
+            f'Appointment details: {updated}',
+            settings.DEFAULT_FROM_EMAIL if hasattr(settings, 'DEFAULT_FROM_EMAIL') else 'noreply@example.com',
+            [updated.doctor.user.email, updated.patient.email],
+            fail_silently=True,
+        )
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
