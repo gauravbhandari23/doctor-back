@@ -27,9 +27,7 @@ class DoctorProfileViewSet(viewsets.ModelViewSet):
         user = self.request.user
         if user.user_type == 'doctor' and not user.is_staff:
             return queryset.filter(user=user)
-        # Only allow staff to see all, patients see none
-        if user.user_type == 'patient' and not user.is_staff:
-            return queryset.none()
+        # Allow patients to see all doctors
         # Advanced filter by query params
         specialty = self.request.query_params.get('specialty')
         is_verified = self.request.query_params.get('is_verified')

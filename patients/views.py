@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from rest_framework import viewsets
+from rest_framework import viewsets, generics
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -46,6 +46,19 @@ class PatientProfileViewSet(viewsets.ModelViewSet):
                 serializer.save()
                 return Response(serializer.data)
             serializer = self.get_serializer(patient_profile)
+            return Response(serializer.data)
+        except PatientProfile.DoesNotExist:
+            return Response({'detail': 'Patient profile not found.'}, status=404)
+
+    # New endpoint for doctors to fetch any patient's profile by user ID
+    @action(detail=False, methods=['get'], url_path='by-user')
+    def by_user(self, request):
+        user_id = request.query_params.get('user_id')
+        if not user_id:
+            return Response({'detail': 'user_id is required'}, status=400)
+        try:
+            profile = PatientProfile.objects.get(user__id=user_id)
+            serializer = self.get_serializer(profile)
             return Response(serializer.data)
         except PatientProfile.DoesNotExist:
             return Response({'detail': 'Patient profile not found.'}, status=404)
