@@ -10,7 +10,7 @@ class UserRegistrationTest(TestCase):
         self.url = reverse('user_register')
         self.data = {
             'email': 'testuser@example.com',
-            'username': 'testuser',
+            'full_name': 'Test User',
             'phone': '1234567890',
             'user_type': 'patient',
             'password': 'testpassword123',

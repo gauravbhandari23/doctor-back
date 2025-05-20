@@ -31,7 +31,7 @@ class AppointmentViewSet(viewsets.ModelViewSet):
             # Notify doctor
             Notification.objects.create(
                 recipient=appointment.doctor.user,
-                message=f"New appointment booked by {user.username} for {appointment.date} at {appointment.time}.",
+                message=f"New appointment booked by {user.full_name} for {appointment.date} at {appointment.time}.",
                 appointment=appointment
             )
         # If doctor is creating, set doctor field automatically
@@ -72,14 +72,14 @@ class AppointmentViewSet(viewsets.ModelViewSet):
         if prev_status == 'pending' and updated.status == 'confirmed':
             Notification.objects.create(
                 recipient=updated.patient,
-                message=f"Your appointment on {updated.date} at {updated.time} has been confirmed by Dr. {updated.doctor.user.username}.",
+                message=f"Your appointment on {updated.date} at {updated.time} has been confirmed by Dr. {updated.doctor.user.full_name}.",
                 appointment=updated
             )
         # Notify patient if doctor completes appointment
         if prev_status in ['pending', 'confirmed'] and updated.status == 'completed':
             Notification.objects.create(
                 recipient=updated.patient,
-                message=f"Your appointment on {updated.date} at {updated.time} with Dr. {updated.doctor.user.username} has been marked as completed. Thank you for visiting!",
+                message=f"Your appointment on {updated.date} at {updated.time} with Dr. {updated.doctor.user.full_name} has been marked as completed. Thank you for visiting!",
                 appointment=updated
             )
         # Notify doctor if patient cancels appointment
@@ -87,7 +87,7 @@ class AppointmentViewSet(viewsets.ModelViewSet):
             if prev_status != 'canceled' and updated.status == 'canceled':
                 Notification.objects.create(
                     recipient=updated.doctor.user,
-                    message=f"The appointment on {updated.date} at {updated.time} with {updated.patient.username} has been canceled by the patient.",
+                    message=f"The appointment on {updated.date} at {updated.time} with {updated.patient.full_name} has been canceled by the patient.",
                     appointment=updated
                 )
             # Notify doctor if patient edits (date, time, severity, symptoms) and not a cancel
@@ -99,7 +99,7 @@ class AppointmentViewSet(viewsets.ModelViewSet):
             ):
                 Notification.objects.create(
                     recipient=updated.doctor.user,
-                    message=f"The appointment on {updated.date} at {updated.time} with {updated.patient.username} has been updated by the patient.",
+                    message=f"The appointment on {updated.date} at {updated.time} with {updated.patient.full_name} has been updated by the patient.",
                     appointment=updated
                 )
         # Send notification/email (placeholder)

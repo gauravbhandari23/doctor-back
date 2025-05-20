@@ -25,10 +25,10 @@ class AppointmentSerializer(serializers.ModelSerializer):
         ]
 
     def get_doctor_name(self, obj):
-        return obj.doctor.user.username if obj.doctor and obj.doctor.user else ""
+        return obj.doctor.user.full_name if obj.doctor and obj.doctor.user else ""
 
     def get_patient_name(self, obj):
-        return obj.patient.username if obj.patient else ""
+        return obj.patient.full_name if obj.patient else ""
 
     def get_patient_email(self, obj):
         return obj.patient.email if obj.patient else ""

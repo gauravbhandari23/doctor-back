@@ -12,7 +12,7 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
         return token
 
     def validate(self, attrs):
-        # Use email instead of username
+        # Use email for authentication
         credentials = {
             'email': attrs.get('email'),
             'password': attrs.get('password')

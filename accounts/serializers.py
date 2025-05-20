@@ -10,13 +10,11 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'email', 'username', 'phone', 'user_type', 'is_verified', 'is_active', 'is_staff', 'password']
+        fields = ['id', 'email', 'full_name', 'phone', 'user_type', 'is_verified', 'is_active', 'is_staff', 'password']
 
     def create(self, validated_data):
         password = validated_data.pop('password')
-        user = User(**validated_data)
-        user.set_password(password)
-        user.save()
+        user = User.objects.create_user(password=password, **validated_data)
         return user
 
 class PasswordResetRequestSerializer(serializers.Serializer):
