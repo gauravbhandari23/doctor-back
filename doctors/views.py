@@ -70,13 +70,16 @@ class DoctorProfileViewSet(viewsets.ModelViewSet):
     def get_object(self):
         obj = super().get_object()
         user = self.request.user
+        # Allow all authenticated users to view (GET, HEAD, OPTIONS) doctor profiles
+        if self.request.method in ('GET', 'HEAD', 'OPTIONS'):
+            return obj
+        # Only allow staff or the doctor themselves to update/delete
         if user.is_staff:
             return obj
         if user.user_type == 'doctor' and obj.user == user:
             return obj
-        # Patients and other users cannot access doctor profiles
         from rest_framework.exceptions import PermissionDenied
-        raise PermissionDenied('You do not have permission to access this doctor profile.')
+        raise PermissionDenied('You do not have permission to modify this doctor profile.')
 
     def update(self, request, *args, **kwargs):
         data = request.data.copy()
